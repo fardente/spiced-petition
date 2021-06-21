@@ -1,7 +1,17 @@
 <form action="/thanks" method="post">
-    <input type="text" name="firstName" />
-    <input type="text" name="lastName" />
-    <canvas width="500" height="300" id="canvas"></canvas>
+    <div class="input-wrapper">
+        <div class="input">
+            <input type="text" name="firstName" id="firstName" required />
+            <label for="firstName">First Name</label>
+        </div>
+        <div class="input">
+            <input type="text" name="lastName" id="lastName" required />
+            <label for="lastName">Last Name</label>
+        </div>
+    </div>
+    <canvas width="550" height="120" id="canvas"></canvas>
+    <p>Sign here</p>
     <button type="submit">Submit</button>
+    <button id="clearBtn">Clear</button>
     <input type="hidden" name="signature" value="bidde" />
 </form>
