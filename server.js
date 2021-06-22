@@ -41,11 +41,20 @@ app.get("/", function (request, response) {
 });
 
 app.get("/thanks", function (request, response) {
-    db.getParticipants()
+    let id = 0;
+    if (request.session.signed) {
+        console.log("Cookie is set, getting ID", request.session.signed);
+        id = request.session.signed;
+    }
+    Promise.all([db.getParticipants(), db.getParticipantById(id)])
         .then((result) => {
+            // console.log("get thanks, result", result);
+            // console.log(result[1]);
+            let signature = result[1].rows[0].signature;
             response.render("thanks", {
                 petitionTitle: "Thanks for signing 1",
-                numSupporters: result.rowCount,
+                numSupporters: result[0].rowCount,
+                signature,
             });
         })
         .catch((error) => {

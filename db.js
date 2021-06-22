@@ -14,6 +14,30 @@ function getParticipants() {
         });
 }
 
+// function getNumParticipants() {
+//     return db
+//         .query(`SELECT * FROM participants`)
+//         .then(function (result) {
+//             // console.log(result.rows);
+//             return result;
+//         })
+//         .catch(function (err) {
+//             console.log(err);
+//         });
+// }
+
+function getParticipantById(id) {
+    return db
+        .query("SELECT * FROM participants WHERE id = $1", [id])
+        .then(function (result) {
+            // console.log(result.rows);
+            return result;
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+}
+
 function addParticipant(firstname, lastname, signature) {
     return db
         .query(
@@ -28,5 +52,6 @@ function addParticipant(firstname, lastname, signature) {
 
 module.exports = {
     getParticipants,
+    getParticipantById,
     addParticipant,
 };
