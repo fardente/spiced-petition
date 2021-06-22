@@ -1,5 +1,7 @@
 const canvas = document.querySelector("#canvas");
 const clearBtn = document.querySelector("#clearBtn");
+const hiddenSign = document.querySelector("#hiddenSign");
+const submitBtn = document.querySelector("#submitBtn");
 
 let ctx = canvas.getContext("2d");
 
@@ -41,4 +43,8 @@ canvas.addEventListener("mouseup", function (event) {
 
 canvas.addEventListener("mouseout", function (event) {
     drawing = false;
+});
+
+submitBtn.addEventListener("click", function (event) {
+    hiddenSign.value = canvas.toDataURL();
 });
