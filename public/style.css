@@ -11,6 +11,12 @@ body {
     align-items: center;
 }
 
+.error {
+    color: red;
+    font-weight: bold;
+    /* font-size: 1.3rem; */
+}
+
 header {
     width: 100%;
     flex-grow: 1;
@@ -25,7 +31,7 @@ h1 {
 
 main {
     flex-grow: 4;
-    width: 100%;
+    /* width: 100%; */
     background-color: darksalmon;
     text-align: center;
     padding: 20px;
@@ -55,6 +61,11 @@ label {
     margin-bottom: 20px;
 }
 
+.signWrapper {
+    position: relative;
+    max-width: min-content;
+}
+
 #canvas {
     border: 2px dotted rgb(67, 67, 67);
     margin-bottom: 5px;
@@ -62,7 +73,26 @@ label {
 }
 
 p {
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+}
+
+button {
+    background-color: saddlebrown;
+    border: 1px solid brown;
+    border-radius: 20px;
+    margin: 20px;
+}
+
+#submitBtn {
+    /* align-self: stretch; */
+    width: 12rem;
+    height: 2rem;
+}
+
+#clearBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 footer {

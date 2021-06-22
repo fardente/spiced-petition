@@ -13,8 +13,8 @@ function clearDrawing() {
 
 function getPosition(event, element) {
     return {
-        x: event.clientX - element.offsetLeft,
-        y: event.clientY - element.offsetTop,
+        x: event.clientX - element.parentElement.offsetLeft,
+        y: event.clientY - element.parentElement.offsetTop,
     };
 }
 
@@ -25,12 +25,14 @@ clearBtn.addEventListener("click", function (event) {
 
 canvas.addEventListener("mousedown", function (event) {
     drawing = true;
+    console.log("drawing");
+
     ctx.beginPath();
 });
 
 canvas.addEventListener("mousemove", function (event) {
-    // console.log(getPosition(event, this));
     if (drawing) {
+        // TODO: Since canvas now lives in a div with relative position, getPosition should get the parent div instead of this
         let { x, y } = getPosition(event, this);
         ctx.lineTo(x, y);
         ctx.stroke();
