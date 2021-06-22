@@ -15,10 +15,15 @@ function getParticipants() {
 }
 
 function addParticipant(firstname, lastname, signature) {
-    return db.query(
-        "INSERT INTO participants (firstname, lastname, signature) VALUES ($1, $2,$3)",
-        [firstname, lastname, signature]
-    );
+    return db
+        .query(
+            "INSERT INTO participants (firstname, lastname, signature) VALUES ($1, $2,$3) RETURNING *",
+            [firstname, lastname, signature]
+        )
+        .then((result) => {
+            // console.log("insert result", result);
+            return result.rows[0].id;
+        });
 }
 
 module.exports = {
