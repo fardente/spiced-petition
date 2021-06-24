@@ -32,26 +32,5 @@ function login(email, password) {
             console.log(console.log(error));
         });
 }
-function getpw(password) {
-    return bcrypt.genSalt().then((salt) => {
-        return bcrypt.hash(password, salt);
-    });
-}
-
-// getpw("hello").then((res) => {
-//     console.log(res);
-//     bcrypt.compare("hello", res).then((res) => {
-//         console.log("compare", res);
-//     });
-// });
-
-login("bobby@gmail.com", "hello").then((result) => {
-    console.log(result);
-    return result;
-});
-
-// db.getUserByEmail("abobby@gmail.com").then((result) => {
-//     console.log(result);
-// });
 
 module.exports = login;

@@ -1,17 +1,19 @@
 <form action="/register" method="post">
     <div>
-        <label for="age">Age: </label>
-        <input type="number" name="age" id="age" min="1" />
+        <label for="firstname">First Name: </label>
+        <input type="text" name="firstname" id="firstname" />
     </div>
     <div>
-        <label for="city">City: </label>
-        <input type="text" name="city" id="city" />
-
+        <label for="lastname">Last Name: </label>
+        <input type="text" name="lastname" id="lastname" />
     </div>
     <div>
-        <label for="homepage">Homepage: </label>
-        <input type="url" name="homepage" id="homepage" />
-
+        <label for="email">Email: </label>
+        <input type="email" name="email" id="email" />
+    </div>
+    <div>
+        <label for="password">Password: </label>
+        <input type="text" name="password" id="password" />
     </div>
     <input type="submit" value="Register" />
 </form>

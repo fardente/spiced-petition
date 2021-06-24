@@ -5,6 +5,9 @@ const cookieSession = require("cookie-session");
 const path = require("path");
 const db = require("./db");
 const login = require("./login");
+const register = require("./register");
+const profile = require("./profile");
+const addProfile = require("./profile");
 
 const app = express();
 const PORT = 8080;
@@ -89,8 +92,36 @@ app.get("/register", function (request, response) {
 });
 
 app.post("/register", function (request, response) {
+    const { firstname, lastname, email, password } = request.body;
+    register(firstname, lastname, email, password).then((result) => {
+        console.log("register result", result);
+        if (result) {
+            console.log("Sucess");
+            request.session.loggedin = "1";
+            request.session.user_id = result.id;
+            response.redirect("/profile");
+        }
+    });
+});
+
+app.get("/profile", function (request, response) {
+    console.log("Visiting profile");
+    if (!request.session.loggedin) {
+        response.redirect("/");
+        return;
+    }
+
+    response.render("profile");
+});
+
+app.post("/profile", function (request, response) {
+    console.log("Posting profile");
     const { age, city, homepage } = request.body;
-    response.send(request.body);
+    const user_id = request.session.user_id;
+    addProfile(user_id, age, city, homepage).then((result) => {
+        console.log("at addprofile post", result);
+        response.redirect("/");
+    });
 });
 
 app.get("/thanks", function (request, response) {

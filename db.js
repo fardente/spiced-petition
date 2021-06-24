@@ -35,6 +35,29 @@ function getUserByEmail(email) {
         });
 }
 
+function addUser(firstname, lastname, email, passwordhash) {
+    return db
+        .query(
+            "INSERT INTO users (firstname, lastname, email, passwordhash) VALUES ($1, $2,$3, $4) RETURNING *",
+            [firstname, lastname, email, passwordhash]
+        )
+        .then((result) => {
+            // console.log("insert result", result);
+            return result.rows[0];
+        });
+}
+
+function addProfile(user_id, age, city, homepage) {
+    return db
+        .query(
+            "INSERT INTO user_profiles (user_id, age, city, homepage) VALUES ($1, $2, $3, $4) RETURNING *",
+            [user_id, age, city, homepage]
+        )
+        .then((result) => {
+            return result.rows[0];
+        });
+}
+
 function getParticipants() {
     return db
         .query(`SELECT * FROM participants`)
@@ -102,4 +125,6 @@ module.exports = {
     getUsers,
     getUserById,
     getUserByEmail,
+    addUser,
+    addProfile,
 };
