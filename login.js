@@ -5,16 +5,16 @@ const bcrypt = require("bcryptjs");
 function login(email, password) {
     return db
         .getUserByEmail(email)
-        .then((result) => {
-            if (result.length != 1) {
+        .then((user) => {
+            if (user.length != 1) {
                 console.log("Login, User 404");
                 return;
             }
-            console.log("Login, User exists", result[0]);
+            console.log("Login, User exists", user[0]);
 
-            result = result[0];
+            user = user[0];
 
-            const { id, firstname, lastname, passwordhash } = result;
+            const { id, firstname, lastname, passwordhash } = user;
             console.log(
                 "Login userdata",
                 id,
@@ -25,7 +25,7 @@ function login(email, password) {
 
             return bcrypt.compare(password, passwordhash).then((res) => {
                 console.log("compare: ", res);
-                return res;
+                return id;
             });
         })
         .catch((error) => {

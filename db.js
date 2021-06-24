@@ -97,6 +97,33 @@ function addSignature(user_id, signature) {
         });
 }
 
+function getSupporters() {
+    return db
+        .query(
+            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != ''"
+        )
+        .then((result) => {
+            return result;
+        });
+}
+
+function getNumSupporters() {
+    return getSupporters().then((result) => {
+        return result.rowCount;
+    });
+}
+
+function getSupportersByCity(city) {
+    return db
+        .query(
+            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != '' AND city = $1",
+            [city]
+        )
+        .then((result) => {
+            return result.rows;
+        });
+}
+
 module.exports = {
     getSignature,
     hasSigned,
@@ -107,4 +134,7 @@ module.exports = {
     getUserByEmail,
     addUser,
     addProfile,
+    getSupporters,
+    getNumSupporters,
+    getSupportersByCity,
 };

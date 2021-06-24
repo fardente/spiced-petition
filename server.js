@@ -53,7 +53,7 @@ app.get("/", function (request, response) {
 });
 
 app.get("/login", function (request, response) {
-    console.log("Visiting login");
+    console.log("Visiting login", request.session.user_id);
     if (request.session.loggedin) {
         response.redirect("/");
         return;
@@ -64,12 +64,12 @@ app.get("/login", function (request, response) {
 app.post("/login", function (request, response) {
     console.log("Visiting Post Login");
     const { email, password } = request.body;
-    login(email, password).then((result) => {
-        console.log("login result", result);
-        if (result) {
+    login(email, password).then((user_id) => {
+        console.log("login result", user_id);
+        if (user_id) {
             console.log("result true setting cookie");
             request.session.loggedin = "1";
-            // response.locals.loggedin = "1";
+            request.session.user_id = user_id;
             response.redirect("/");
             return;
         }
@@ -80,6 +80,7 @@ app.post("/login", function (request, response) {
 app.post("/logout", function (request, response) {
     console.log("Logged out");
     request.session.loggedin = "";
+    request.session.user_id = "";
     // response.locals.loggedin = "";
     response.redirect("/");
 });
@@ -121,19 +122,18 @@ app.post("/profile", function (request, response) {
     const { age, city, homepage } = request.body;
     const user_id = request.session.user_id;
     addProfile(user_id, +age, city, homepage).then((result) => {
-        console.log("at addprofile post", result);
         response.redirect("/");
     });
 });
 
 app.get("/thanks", function (request, response) {
     if (request.session.loggedin) {
+        console.log(request.session.user_id);
         Promise.all([
             db.getSignature(request.session.user_id),
-            db.getNumUsers(),
+            db.getNumSupporters(),
         ])
             .then((result) => {
-                console.log(result);
                 const signature = result[0];
                 const numSupporters = result[1];
                 if (signature) {
@@ -172,17 +172,27 @@ app.post("/thanks", function (request, response) {
 });
 
 app.get("/supporters", function (request, response) {
-    db.getParticipants()
-        .then((result) => {
-            console.log(result);
+    db.getSupporters()
+        .then((supporters) => {
             response.render("supporters", {
                 petitionTitle: "Thanks for signing 1",
-                supporters: result.rows,
+                supporters: supporters.rows,
             });
         })
         .catch((error) => {
             console.log("Error getting Participants for supporters", error);
         });
+});
+
+app.get("/supporters/:city", function (request, response) {
+    const { city } = request.params;
+    console.log("getting suppoerters from", city);
+    db.getSupportersByCity(city).then((supporters) => {
+        response.render("supporters", {
+            petitionTitle: "Supporters from " + city,
+            supporters,
+        });
+    });
 });
 
 app.listen(PORT);
