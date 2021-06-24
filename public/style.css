@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 body {
-    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -93,6 +92,10 @@ button {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+li {
+    list-style: none;
 }
 
 footer {

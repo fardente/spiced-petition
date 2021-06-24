@@ -1,6 +1,5 @@
 const express = require("express");
 const hb = require("express-handlebars");
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const path = require("path");
 const db = require("./db");
@@ -14,8 +13,6 @@ const PORT = 8080;
 
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
-
-// app.use(cookieParser());
 
 app.use(
     cookieSession({
@@ -41,8 +38,14 @@ app.get("/", function (request, response) {
     console.log("cookies", request.session);
     if (request.session.loggedin) {
         console.log("Cookie is set, redirecting", response.locals.loggedin);
-        response.render("petition", {
-            petitionTitle: "Welcome to Petition 1",
+        db.hasSigned(request.session.user_id).then((result) => {
+            if (result) {
+                response.redirect("thanks");
+            } else {
+                response.render("petition", {
+                    petitionTitle: "Welcome to Petition 1",
+                });
+            }
         });
     } else {
         response.redirect("/login");
@@ -60,14 +63,13 @@ app.get("/login", function (request, response) {
 
 app.post("/login", function (request, response) {
     console.log("Visiting Post Login");
-    console.log(request.body);
     const { email, password } = request.body;
     login(email, password).then((result) => {
         console.log("login result", result);
         if (result) {
             console.log("result true setting cookie");
             request.session.loggedin = "1";
-            response.locals.loggedin = "1";
+            // response.locals.loggedin = "1";
             response.redirect("/");
             return;
         }
@@ -78,16 +80,16 @@ app.post("/login", function (request, response) {
 app.post("/logout", function (request, response) {
     console.log("Logged out");
     request.session.loggedin = "";
-    response.locals.loggedin = "";
+    // response.locals.loggedin = "";
     response.redirect("/");
 });
 
 app.get("/register", function (request, response) {
+    // TODO: POTENTIAL LOGGED IN CHECK IN MIDDLEWARE
     if (request.session.loggedin) {
         response.redirect("/");
         return;
     }
-
     response.render("register", { petitionTitle: "Register for Petition 1" });
 });
 
@@ -118,26 +120,31 @@ app.post("/profile", function (request, response) {
     console.log("Posting profile");
     const { age, city, homepage } = request.body;
     const user_id = request.session.user_id;
-    addProfile(user_id, age, city, homepage).then((result) => {
+    addProfile(user_id, +age, city, homepage).then((result) => {
         console.log("at addprofile post", result);
         response.redirect("/");
     });
 });
 
 app.get("/thanks", function (request, response) {
-    if (request.session.signed) {
-        console.log("Cookie is set, getting ID", request.session.signed);
-        let id = request.session.signed;
-        Promise.all([db.getParticipants(), db.getParticipantById(id)])
+    if (request.session.loggedin) {
+        Promise.all([
+            db.getSignature(request.session.user_id),
+            db.getNumUsers(),
+        ])
             .then((result) => {
-                // console.log("get thanks, result", result);
-                // console.log(result[1]);
-                let signature = result[1].rows[0].signature;
-                response.render("thanks", {
-                    petitionTitle: "Thanks for signing 1",
-                    numSupporters: result[0].rowCount,
-                    signature,
-                });
+                console.log(result);
+                const signature = result[0];
+                const numSupporters = result[1];
+                if (signature) {
+                    response.render("thanks", {
+                        petitionTitle: "Thanks for signing 1",
+                        numSupporters,
+                        signature,
+                    });
+                } else {
+                    response.redirect("/");
+                }
             })
             .catch((error) => {
                 console.log("Error getting Participants for thanks", error);
@@ -145,6 +152,23 @@ app.get("/thanks", function (request, response) {
     } else {
         response.redirect("/");
     }
+});
+
+app.post("/thanks", function (request, response) {
+    const { signature } = request.body;
+    const user_id = request.session.user_id;
+    db.addSignature(user_id, signature)
+        .then((id) => {
+            console.log("post /thanks: res", id);
+            request.session.signed = id;
+            response.redirect("/thanks");
+        })
+        .catch((error) => {
+            console.log("error post /thanks", error);
+            response.render("petition", {
+                error: "Error: Could not process your request, please try again later...",
+            });
+        });
 });
 
 app.get("/supporters", function (request, response) {
@@ -158,23 +182,6 @@ app.get("/supporters", function (request, response) {
         })
         .catch((error) => {
             console.log("Error getting Participants for supporters", error);
-        });
-});
-
-app.post("/thanks", function (request, response) {
-    let { firstName, lastName, signature } = request.body;
-    // console.log("body", firstName, lastName, signature);
-    db.addParticipant(firstName, lastName, signature)
-        .then((id) => {
-            console.log("post /thanks: res", id);
-            request.session.signed = id;
-            response.redirect("/thanks");
-        })
-        .catch((error) => {
-            console.log("error post /thanks", error);
-            response.render("petition", {
-                error: "Error: Could not process your request, please try again later...",
-            });
         });
 });
 

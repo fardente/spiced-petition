@@ -21,8 +21,8 @@ CREATE TABLE user_profiles (
 
 CREATE TABLE signatures (
     id SERIAL primary key,
-    userId INTEGER NOT NULL UNIQUE REFERENCES users (id),
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users (id),
     signature TEXT NOT NULL CHECK (signature != '')
 );
 
-INSERT INTO users (firstName, lastName, email, passwordHash) VALUES ('bob', 'odenkirk', 'bobby@gmail.com', '$2a$10$IMZ/mDorZreUHcUb3q5nYuEuujLcdsWJVCAIOWa/v0wO1EUeq70yG');
+-- INSERT INTO users (firstName, lastName, email, passwordHash) VALUES ('bob', 'odenkirk', 'bobby@gmail.com', '$2a$10$IMZ/mDorZreUHcUb3q5nYuEuujLcdsWJVCAIOWa/v0wO1EUeq70yG');

@@ -13,6 +13,12 @@ function getUsers() {
         });
 }
 
+function getNumUsers() {
+    return getUsers().then((result) => {
+        return result.rowCount;
+    });
+}
+
 function getUserById(id) {
     return db
         .query("SELECT * FROM users WHERE id = $1", [id])
@@ -58,59 +64,32 @@ function addProfile(user_id, age, city, homepage) {
         });
 }
 
-function getParticipants() {
+function getSignature(user_id) {
     return db
-        .query(`SELECT * FROM participants`)
-        .then(function (result) {
-            // console.log(result.rows);
-            return result;
+        .query("SELECT signature FROM signatures WHERE user_id = $1", [user_id])
+        .then((result) => {
+            console.log("Getting signature from db");
+            return result.rows[0].signature;
         })
-        .catch(function (err) {
-            console.log(err);
+        .catch((error) => {
+            console.log("ERROR getting signature", error);
         });
 }
 
-// function getNumParticipants() {
-//     return db
-//         .query(`SELECT * FROM participants`)
-//         .then(function (result) {
-//             // console.log(result.rows);
-//             return result;
-//         })
-//         .catch(function (err) {
-//             console.log(err);
-//         });
-// }
-
-function getParticipantById(id) {
-    return db
-        .query("SELECT * FROM participants WHERE id = $1", [id])
-        .then(function (result) {
-            // console.log(result.rows);
-            return result;
-        })
-        .catch(function (err) {
-            console.log(err);
-        });
+function hasSigned(user_id) {
+    return getSignature(user_id).then((result) => {
+        if (result) {
+            return true;
+        }
+        return false;
+    });
 }
 
-function getParticipantByEmail(email) {
-    return db
-        .query("SELECT * FROM participants WHERE email = $1", [email])
-        .then(function (result) {
-            // console.log(result.rows);
-            return result;
-        })
-        .catch(function (err) {
-            console.log(err);
-        });
-}
-
-function addParticipant(firstname, lastname, signature) {
+function addSignature(user_id, signature) {
     return db
         .query(
-            "INSERT INTO participants (firstname, lastname, signature) VALUES ($1, $2,$3) RETURNING *",
-            [firstname, lastname, signature]
+            "INSERT INTO signatures (user_id, signature) VALUES ($1, $2) RETURNING *",
+            [user_id, signature]
         )
         .then((result) => {
             // console.log("insert result", result);
@@ -119,10 +98,11 @@ function addParticipant(firstname, lastname, signature) {
 }
 
 module.exports = {
-    getParticipants,
-    getParticipantById,
-    addParticipant,
+    getSignature,
+    hasSigned,
+    addSignature,
     getUsers,
+    getNumUsers,
     getUserById,
     getUserByEmail,
     addUser,
