@@ -4,6 +4,7 @@ const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
 const path = require("path");
 const db = require("./db");
+const login = require("./login");
 
 const app = express();
 const PORT = 8080;
@@ -26,48 +27,102 @@ app.use(
     })
 );
 
+app.use(function (request, response, next) {
+    response.locals.loggedin = request.session.loggedin;
+    next();
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", function (request, response) {
     console.log("cookies", request.session);
-    if (request.session.signed) {
-        console.log("Cookie is set, redirecting");
-        response.redirect("/thanks");
-    } else {
+    if (request.session.loggedin) {
+        console.log("Cookie is set, redirecting", response.locals.loggedin);
         response.render("petition", {
             petitionTitle: "Welcome to Petition 1",
         });
+    } else {
+        response.redirect("/login");
     }
 });
 
+app.get("/login", function (request, response) {
+    console.log("Visiting login");
+    if (request.session.loggedin) {
+        response.redirect("/");
+        return;
+    }
+    response.render("login", { petitionTitle: "Login to Petition 1" });
+});
+
+app.post("/login", function (request, response) {
+    console.log("Visiting Post Login");
+    console.log(request.body);
+    const { email, password } = request.body;
+    login(email, password).then((result) => {
+        console.log("login result", result);
+        if (result) {
+            console.log("result true setting cookie");
+            request.session.loggedin = "1";
+            response.locals.loggedin = "1";
+            response.redirect("/");
+            return;
+        }
+        response.redirect("/login");
+    });
+});
+
+app.post("/logout", function (request, response) {
+    console.log("Logged out");
+    request.session.loggedin = "";
+    response.locals.loggedin = "";
+    response.redirect("/");
+});
+
+app.get("/register", function (request, response) {
+    if (request.session.loggedin) {
+        response.redirect("/");
+        return;
+    }
+
+    response.render("register", { petitionTitle: "Register for Petition 1" });
+});
+
+app.post("/register", function (request, response) {
+    const { age, city, homepage } = request.body;
+    response.send(request.body);
+});
+
 app.get("/thanks", function (request, response) {
-    let id = 0;
     if (request.session.signed) {
         console.log("Cookie is set, getting ID", request.session.signed);
-        id = request.session.signed;
-    }
-    Promise.all([db.getParticipants(), db.getParticipantById(id)])
-        .then((result) => {
-            // console.log("get thanks, result", result);
-            // console.log(result[1]);
-            let signature = result[1].rows[0].signature;
-            response.render("thanks", {
-                petitionTitle: "Thanks for signing 1",
-                numSupporters: result[0].rowCount,
-                signature,
+        let id = request.session.signed;
+        Promise.all([db.getParticipants(), db.getParticipantById(id)])
+            .then((result) => {
+                // console.log("get thanks, result", result);
+                // console.log(result[1]);
+                let signature = result[1].rows[0].signature;
+                response.render("thanks", {
+                    petitionTitle: "Thanks for signing 1",
+                    numSupporters: result[0].rowCount,
+                    signature,
+                });
+            })
+            .catch((error) => {
+                console.log("Error getting Participants for thanks", error);
             });
-        })
-        .catch((error) => {
-            console.log("Error getting Participants for thanks", error);
-        });
+    } else {
+        response.redirect("/");
+    }
 });
 
 app.get("/supporters", function (request, response) {
     db.getParticipants()
         .then((result) => {
             console.log(result);
-            response.render("petition", {
+            response.render("supporters", {
                 petitionTitle: "Thanks for signing 1",
+                supporters: result.rows,
             });
         })
         .catch((error) => {
