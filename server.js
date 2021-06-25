@@ -31,8 +31,9 @@ app.use(
 app.use(csurf());
 
 app.use(function (request, response, next) {
+    response.set("x-frame-options", "deny");
     response.locals.csrfToken = request.csrfToken();
-    response.locals.loggedin = request.session.loggedin;
+    response.locals.user_id = request.session.user_id;
     next();
 });
 
@@ -40,8 +41,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", function (request, response) {
     console.log("cookies", request.session);
-    if (request.session.loggedin) {
-        console.log("Cookie is set, redirecting", response.locals.loggedin);
+    if (request.session.user_id) {
+        console.log("Cookie is set, redirecting", response.locals.user_id);
         db.hasSigned(request.session.user_id).then((result) => {
             if (result) {
                 response.redirect("thanks");
@@ -58,7 +59,7 @@ app.get("/", function (request, response) {
 
 app.get("/login", function (request, response) {
     console.log("Visiting login", request.session.user_id);
-    if (request.session.loggedin) {
+    if (request.session.user_id) {
         response.redirect("/");
         return;
     }
@@ -72,7 +73,6 @@ app.post("/login", function (request, response) {
         console.log("login result", user_id);
         if (user_id) {
             console.log("result true setting cookie");
-            request.session.loggedin = "1";
             request.session.user_id = user_id;
             response.redirect("/");
             return;
@@ -83,15 +83,13 @@ app.post("/login", function (request, response) {
 
 app.post("/logout", function (request, response) {
     console.log("Logged out");
-    request.session.loggedin = "";
     request.session.user_id = "";
-    // response.locals.loggedin = "";
     response.redirect("/");
 });
 
 app.get("/register", function (request, response) {
     // TODO: POTENTIAL LOGGED IN CHECK IN MIDDLEWARE
-    if (request.session.loggedin) {
+    if (request.session.user_id) {
         response.redirect("/");
         return;
     }
@@ -104,7 +102,6 @@ app.post("/register", function (request, response) {
         console.log("register result", result);
         if (result) {
             console.log("Sucess");
-            request.session.loggedin = "1";
             request.session.user_id = result.id;
             response.redirect("/profile");
         }
@@ -113,7 +110,7 @@ app.post("/register", function (request, response) {
 
 app.get("/profile", function (request, response) {
     console.log("Visiting profile");
-    if (!request.session.loggedin) {
+    if (!request.session.user_id) {
         response.redirect("/");
         return;
     }
@@ -131,7 +128,7 @@ app.post("/profile", function (request, response) {
 });
 
 app.get("/thanks", function (request, response) {
-    if (request.session.loggedin) {
+    if (request.session.user_id) {
         console.log(request.session.user_id);
         Promise.all([
             db.getSignature(request.session.user_id),
