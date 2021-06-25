@@ -196,4 +196,4 @@ app.get("/supporters/:city", function (request, response) {
     });
 });
 
-app.listen(PORT);
+app.listen(process.env.PORT || PORT);

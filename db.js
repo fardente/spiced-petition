@@ -1,6 +1,9 @@
 const spicedPg = require("spiced-pg");
 const { dbUser, dbPass } = require("./secrets.json");
-var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
+var db = spicedPg(
+    process.env.DATABASE_URL ||
+        `postgres:${dbUser}:${dbPass}@localhost:5432/petition`
+);
 
 function getUsers() {
     return db
