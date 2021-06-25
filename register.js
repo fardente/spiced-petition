@@ -16,6 +16,7 @@ function hashPass(password) {
     });
 }
 
+// TODO: HANDLE USER ALREADY EXISTS
 function register(firstname, lastname, email, password) {
     return checkUserExists(email).then((result) => {
         if (!result) {

@@ -3,6 +3,7 @@
     {{#if loggedin}}
         <form action="/logout" method="POST">
             <input type="submit" value="Logout" />
+            <input type="hidden" name="_csrf" value="{{csrfToken}}" />
         </form>
     {{/if}}
 </header>

@@ -1,6 +1,7 @@
 const express = require("express");
 const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
+const csurf = require("csurf");
 const path = require("path");
 const db = require("./db");
 const login = require("./login");
@@ -27,7 +28,10 @@ app.use(
     })
 );
 
+app.use(csurf());
+
 app.use(function (request, response, next) {
+    response.locals.csrfToken = request.csrfToken();
     response.locals.loggedin = request.session.loggedin;
     next();
 });
