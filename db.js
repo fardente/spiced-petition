@@ -1,4 +1,5 @@
 const spicedPg = require("spiced-pg");
+const { genSalt, hash } = require("bcryptjs");
 const { dbUser, dbPass } = require("./secrets.json");
 var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
 
@@ -54,6 +55,10 @@ function addUser(firstname, lastname, email, passwordhash) {
 }
 
 function addProfile(user_id, age, city, homepage) {
+    if (!age && !city && !homepage) {
+        console.log("No profile added");
+        return Promise.resolve({});
+    }
     return db
         .query(
             "INSERT INTO user_profiles (user_id, age, city, homepage) VALUES ($1, $2, $3, $4) RETURNING *",
@@ -100,7 +105,7 @@ function addSignature(user_id, signature) {
 function getSupporters() {
     return db
         .query(
-            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != ''"
+            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id FULL JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != ''"
         )
         .then((result) => {
             return result;
@@ -124,6 +129,81 @@ function getSupportersByCity(city) {
         });
 }
 
+function getFullUser(user_id) {
+    return db
+        .query(
+            "SELECT users.id, users.firstname, users.lastname, users.email, user_profiles.age, user_profiles.city, user_profiles.homepage FROM users FULL JOIN user_profiles ON users.id = user_profiles.user_id WHERE users.id = $1",
+            [user_id]
+        )
+        .then((result) => {
+            return result.rows[0];
+        });
+}
+
+function hashPass(password) {
+    return genSalt().then((salt) => {
+        return hash(password, salt);
+    });
+}
+
+function updateUser(user_id, firstname, lastname, email, password) {
+    if (password) {
+        hashPass(password).then((passwordhash) => {
+            return db.query(
+                `UPDATE users SET firstname = $1, lastname = $2, email = $3, passwordhash = $4 WHERE id = $5`,
+                [firstname, lastname, email, passwordhash, user_id]
+            );
+        });
+    } else {
+        return db.query(
+            `UPDATE users SET firstname = $1, lastname = $2, email = $3 WHERE id = $4`,
+            [firstname, lastname, email, user_id]
+        );
+    }
+}
+
+function upsertProfile(user_id, age, city, homepage) {
+    return db.query(
+        `INSERT INTO user_profiles (user_id, age, city, homepage)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id)
+        DO UPDATE SET age = $2, city = $3, homepage = $4
+        RETURNING *`,
+        [user_id, age, city, homepage]
+    );
+}
+
+function upsertUser(user) {}
+
+function deleteSignature(user_id) {
+    return db.query("DELETE FROM signatures WHERE user_id = $1", [user_id]);
+}
+
+function deleteProfile(user_id) {
+    return db.query("DELETE FROM user_profiles WHERE user_id = $1", [user_id]);
+}
+function deleteUser(user_id) {
+    return db.query("DELETE FROM users WHERE id = $1", [user_id]);
+}
+
+function deleteAccount(user_id) {
+    deleteSignature(user_id).then((result) => {
+        deleteProfile(user_id).then((result) => {
+            deleteUser(user_id).then((result) => {
+                console.log("deleted user", user_id, result);
+            });
+        });
+    });
+}
+
+// const user_id = 13;
+// addSignature(user_id, "user13").then((result) => {
+//     console.log("inser", result);
+//     deleteSignature(user_id).then((result) => {
+//         console.log("delte", result);
+//     });
+// });
+
 module.exports = {
     getSignature,
     hasSigned,
@@ -133,8 +213,12 @@ module.exports = {
     getUserById,
     getUserByEmail,
     addUser,
+    updateUser,
     addProfile,
+    upsertProfile,
+    getFullUser,
     getSupporters,
     getNumSupporters,
     getSupportersByCity,
+    deleteSignature,
 };

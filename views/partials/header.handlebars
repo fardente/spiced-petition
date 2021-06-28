@@ -1,5 +1,8 @@
 <header>
     <h1>{{petitionTitle}}</h1>
+    {{#if filter}}
+        <a href="/supporters">Back to all supporters</a>
+    {{/if}}
     {{#if user_id}}
         <form action="/logout" method="POST">
             <input type="submit" value="Logout" />

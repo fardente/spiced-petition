@@ -192,7 +192,31 @@ app.get("/supporters/:city", function (request, response) {
         response.render("supporters", {
             petitionTitle: "Supporters from " + city,
             supporters,
+            filter: "1",
         });
+    });
+});
+
+app.get("/editprofile", function (request, response) {
+    console.log("visiting edit");
+    const id = request.session.user_id;
+    db.getFullUser(id).then((result) => {
+        console.log(result);
+        response.render("editprofile", result);
+    });
+});
+
+app.post("/editprofile", function (request, response) {
+    console.log("updating user");
+    const id = request.session.user_id;
+    const { firstname, lastname, email, password, age, city, homepage } =
+        request.body;
+    Promise.all([
+        db.updateUser(id, firstname, lastname, email, password),
+        db.upsertProfile(id, age, city, homepage),
+    ]).then((result) => {
+        console.log(result);
+        response.redirect("/editprofile");
     });
 });
 
