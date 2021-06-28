@@ -76,7 +76,6 @@ function getSignature(user_id) {
     return db
         .query("SELECT signature FROM signatures WHERE user_id = $1", [user_id])
         .then((result) => {
-            console.log("Getting signature from db");
             return result.rows[0].signature;
         })
         .catch((error) => {
