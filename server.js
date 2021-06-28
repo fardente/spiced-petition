@@ -18,7 +18,7 @@ app.set("view engine", "handlebars");
 
 app.use(
     cookieSession({
-        secret: `I'm always angry.`,
+        secret: process.env.SESSION_SECRET || `I'm always angry.`,
         maxAge: 1000 * 60 * 60 * 24 * 14,
     })
 );
@@ -189,4 +189,4 @@ app.post("/editprofile", mw.requireLoggedIn, function (request, response) {
     });
 });
 
-app.listen(PORT);
+app.listen(process.env.PORT || PORT);
