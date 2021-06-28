@@ -8,6 +8,7 @@ const login = require("./login");
 const register = require("./register");
 const profile = require("./profile");
 const addProfile = require("./profile");
+const mw = require("./middleware");
 
 const app = express();
 const PORT = 8080;
@@ -39,40 +40,26 @@ app.use(function (request, response, next) {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", function (request, response) {
-    console.log("cookies", request.session);
-    if (request.session.user_id) {
-        console.log("Cookie is set, redirecting", response.locals.user_id);
-        db.hasSigned(request.session.user_id).then((result) => {
-            if (result) {
-                response.redirect("thanks");
-            } else {
-                response.render("petition", {
-                    petitionTitle: "Welcome to Petition 1",
-                });
-            }
-        });
-    } else {
-        response.redirect("/login");
-    }
+app.get("/", mw.requireLoggedIn, function (request, response) {
+    db.hasSigned(request.session.user_id).then((result) => {
+        if (result) {
+            response.redirect("/thanks");
+        } else {
+            response.render("petition", {
+                petitionTitle: "Welcome to Petition 1",
+            });
+        }
+    });
 });
 
-app.get("/login", function (request, response) {
-    console.log("Visiting login", request.session.user_id);
-    if (request.session.user_id) {
-        response.redirect("/");
-        return;
-    }
+app.get("/login", mw.requireLoggedOut, function (request, response) {
     response.render("login", { petitionTitle: "Login to Petition 1" });
 });
 
-app.post("/login", function (request, response) {
-    console.log("Visiting Post Login");
+app.post("/login", mw.requireLoggedOut, function (request, response) {
     const { email, password } = request.body;
     login(email, password).then((user_id) => {
-        console.log("login result", user_id);
         if (user_id) {
-            console.log("result true setting cookie");
             request.session.user_id = user_id;
             response.redirect("/");
             return;
@@ -81,45 +68,38 @@ app.post("/login", function (request, response) {
     });
 });
 
-app.post("/logout", function (request, response) {
-    console.log("Logged out");
+app.post("/logout", mw.requireLoggedIn, function (request, response) {
     request.session.user_id = "";
     response.redirect("/");
 });
 
-app.get("/register", function (request, response) {
-    // TODO: POTENTIAL LOGGED IN CHECK IN MIDDLEWARE
-    if (request.session.user_id) {
-        response.redirect("/");
-        return;
-    }
+app.get("/register", mw.requireLoggedOut, function (request, response) {
     response.render("register", { petitionTitle: "Register for Petition 1" });
 });
 
-app.post("/register", function (request, response) {
+app.post("/register", mw.requireLoggedOut, function (request, response) {
     const { firstname, lastname, email, password } = request.body;
-    register(firstname, lastname, email, password).then((result) => {
-        console.log("register result", result);
-        if (result) {
-            console.log("Sucess");
-            request.session.user_id = result.id;
-            response.redirect("/profile");
-        }
-    });
+    register(firstname, lastname, email, password)
+        .then((result) => {
+            if (result) {
+                request.session.user_id = result.id;
+                response.redirect("/profile");
+            }
+        })
+        .catch((error) => {
+            console.log("Error registering", error);
+            response.render("register", {
+                petitionTitle: "Error registering",
+                error,
+            });
+        });
 });
 
-app.get("/profile", function (request, response) {
-    console.log("Visiting profile");
-    if (!request.session.user_id) {
-        response.redirect("/");
-        return;
-    }
-
+app.get("/profile", mw.requireLoggedIn, function (request, response) {
     response.render("profile");
 });
 
-app.post("/profile", function (request, response) {
-    console.log("Posting profile");
+app.post("/profile", mw.requireLoggedIn, function (request, response) {
     const { age, city, homepage } = request.body;
     const user_id = request.session.user_id;
     addProfile(user_id, +age, city, homepage).then((result) => {
@@ -127,40 +107,34 @@ app.post("/profile", function (request, response) {
     });
 });
 
-app.get("/thanks", function (request, response) {
-    if (request.session.user_id) {
-        console.log(request.session.user_id);
-        Promise.all([
-            db.getSignature(request.session.user_id),
-            db.getNumSupporters(),
-        ])
-            .then((result) => {
-                const signature = result[0];
-                const numSupporters = result[1];
-                if (signature) {
-                    response.render("thanks", {
-                        petitionTitle: "Thanks for signing 1",
-                        numSupporters,
-                        signature,
-                    });
-                } else {
-                    response.redirect("/");
-                }
-            })
-            .catch((error) => {
-                console.log("Error getting Participants for thanks", error);
-            });
-    } else {
-        response.redirect("/");
-    }
+app.get("/thanks", mw.requireLoggedIn, function (request, response) {
+    Promise.all([
+        db.getSignature(request.session.user_id),
+        db.getNumSupporters(),
+    ])
+        .then((result) => {
+            const signature = result[0];
+            const numSupporters = result[1];
+            if (signature) {
+                response.render("thanks", {
+                    petitionTitle: "Thanks for signing 1",
+                    numSupporters,
+                    signature,
+                });
+            } else {
+                response.redirect("/");
+            }
+        })
+        .catch((error) => {
+            console.log("Error getting Participants for thanks", error);
+        });
 });
 
-app.post("/thanks", function (request, response) {
+app.post("/thanks", mw.requireLoggedIn, function (request, response) {
     const { signature } = request.body;
     const user_id = request.session.user_id;
     db.addSignature(user_id, signature)
         .then((id) => {
-            console.log("post /thanks: res", id);
             request.session.signed = id;
             response.redirect("/thanks");
         })
@@ -172,7 +146,7 @@ app.post("/thanks", function (request, response) {
         });
 });
 
-app.get("/supporters", function (request, response) {
+app.get("/supporters", mw.requireLoggedIn, function (request, response) {
     db.getSupporters()
         .then((supporters) => {
             response.render("supporters", {
@@ -185,9 +159,8 @@ app.get("/supporters", function (request, response) {
         });
 });
 
-app.get("/supporters/:city", function (request, response) {
+app.get("/supporters/:city", mw.requireLoggedIn, function (request, response) {
     const { city } = request.params;
-    console.log("getting suppoerters from", city);
     db.getSupportersByCity(city).then((supporters) => {
         response.render("supporters", {
             petitionTitle: "Supporters from " + city,
@@ -197,17 +170,14 @@ app.get("/supporters/:city", function (request, response) {
     });
 });
 
-app.get("/editprofile", function (request, response) {
-    console.log("visiting edit");
+app.get("/editprofile", mw.requireLoggedIn, function (request, response) {
     const id = request.session.user_id;
     db.getFullUser(id).then((result) => {
-        console.log(result);
         response.render("editprofile", result);
     });
 });
 
-app.post("/editprofile", function (request, response) {
-    console.log("updating user");
+app.post("/editprofile", mw.requireLoggedIn, function (request, response) {
     const id = request.session.user_id;
     const { firstname, lastname, email, password, age, city, homepage } =
         request.body;
@@ -215,7 +185,6 @@ app.post("/editprofile", function (request, response) {
         db.updateUser(id, firstname, lastname, email, password),
         db.upsertProfile(id, age, city, homepage),
     ]).then((result) => {
-        console.log(result);
         response.redirect("/editprofile");
     });
 });
