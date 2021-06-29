@@ -1,3 +1,11 @@
+@font-face {
+    font-family: "frankentype_personal_use_onRg";
+    src: url("frankentypepersonaluseonly-pj7v-webfont.woff2") format("woff2"),
+        url("frankentypepersonaluseonly-pj7v-webfont.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,6 +16,10 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    font-family: frankentype_personal_use_onRg, "Franklin Gothic Medium",
+        "Arial Narrow", Arial, sans-serif;
+    height: 100%;
+    background-color: rgb(26, 0, 0);
 }
 
 .error {
@@ -16,12 +28,36 @@ body {
     /* font-size: 1.3rem; */
 }
 
+.highlight {
+    color: red;
+}
+
+.secret {
+    color: black;
+}
+
+a {
+    color: rgb(125, 16, 16);
+}
+
+a:hover {
+    color: rgb(159, 30, 30);
+}
+
 header {
-    width: 100%;
+    width: 80%;
     flex-grow: 1;
-    flex-shrink: 2;
-    background-color: darkmagenta;
+    flex-shrink: 3;
+    background-color: rgb(26, 0, 0);
     text-align: center;
+    color: rgb(208, 7, 7);
+}
+
+.nav {
+    width: 50%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
 h1 {
@@ -29,11 +65,27 @@ h1 {
 }
 
 main {
-    flex-grow: 4;
-    /* width: 100%; */
-    background-color: darksalmon;
+    /* flex-grow: 4; */
+    width: 80%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    background-color: rgb(0, 0, 0);
     text-align: center;
-    padding: 20px;
+    /* margin-bottom: 20px; */
+    color: red;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    /* padding-bottom: 2.5rem; */
+    /* position: relative; */
+}
+
+.message {
+    width: 80%;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
 }
 
 form {
@@ -68,40 +120,166 @@ label {
 #canvas {
     border: 2px dotted rgb(67, 67, 67);
     margin-bottom: 5px;
-    background-color: rgb(244, 244, 244);
+    background-color: rgb(28, 5, 5);
+    color: #c10000;
+    border: 2px solid red;
+    box-shadow: 1px 3px 6px 4px rgb(75, 1, 1);
 }
 
 p {
-    margin-bottom: 5px;
+    margin-bottom: 1px;
 }
 
-button {
-    background-color: saddlebrown;
+button,
+input[type="submit"] {
+    background-color: rgb(177, 2, 28);
     border: 1px solid brown;
     border-radius: 20px;
-    margin: 20px;
+    margin: 5px;
+    padding: 5px 20px;
+    font-family: frankentype_personal_use_onRg, "Franklin Gothic Medium",
+        "Arial Narrow", Arial, sans-serif;
+    font-size: 1rem;
+    color: rgb(60, 9, 19);
+}
+
+input[type="submit"]:hover {
+    background-color: rgb(191, 23, 48);
+    box-shadow: 1px 1px 1px 1px rgb(152, 8, 8);
+}
+
+input[type="submit"]:active {
+    border: 1px solid rgb(188, 44, 66);
+    background-color: rgb(132, 6, 25);
+    box-shadow: 1px 0px 1px 1px rgb(152, 8, 8);
 }
 
 #submitBtn {
-    /* align-self: stretch; */
-    width: 12rem;
-    height: 2rem;
+    align-self: stretch;
+    font-size: 1.5rem;
+    margin-top: 30px;
+    padding: 10px;
+    box-shadow: 3px 3px 5px 6px rgb(118, 0, 0);
+}
+
+#submitBtn:hover {
+    background-color: rgb(191, 23, 48);
+    box-shadow: 3px 3px 5px 6px rgb(152, 8, 8);
 }
 
 #clearBtn {
     position: absolute;
     top: 0;
     right: 0;
+    margin: 5px;
+    padding: 0;
+}
+
+#clearBtn img {
+    color: red;
+}
+svg:hover {
+    fill: red;
+}
+
+.footnote {
+    font-size: 0.5rem;
+    color: red;
+    text-align: center;
+}
+
+.thanks {
+    flex-grow: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: black;
+    width: 100%;
+}
+
+#unsignBtn {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: frankentype_personal_use_onRg, "Franklin Gothic Medium",
+        "Arial Narrow", Arial, sans-serif;
+    font-size: 1rem;
+    text-decoration: underline;
+    color: rgb(125, 16, 16);
+}
+
+#unsignBtn:hover {
+    color: rgb(159, 30, 30);
+}
+
+ul {
+    width: 80%;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: scroll;
 }
 
 li {
+    border: 2px solid red;
     list-style: none;
+    margin: 20px;
+    padding: 10px;
+    box-shadow: 1px 3px 3px 3px rgb(118, 0, 0);
+    /* max-width: 200px; */
 }
+
+li p {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+form div {
+    width: 100%;
+    text-align: right;
+}
+
+form div label {
+    width: 70%;
+}
+
+form div input {
+    width: 50%;
+}
+
+/* .register div {
+    width: 100%;
+    text-align: right;
+}
+
+.register div label {
+    width: 50%;
+}
+
+.register div input {
+    width: 50%;
+} */
 
 footer {
     flex-grow: 1;
-    flex-shrink: 2;
-
+    flex-shrink: 1;
+    min-height: 20px;
     width: 100%;
-    background-color: rgb(140, 130, 205);
+    background-color: rgb(26, 0, 0);
 }
+/* #unsignBtn {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: frankentype_personal_use_onRg, "Franklin Gothic Medium",
+        "Arial Narrow", Arial, sans-serif;
+    font-size: 1rem;
+    text-decoration: underline;
+    color: rgb(125, 16, 16);
+}
+
+#unsignBtn:hover {
+    color: blue;
+} */

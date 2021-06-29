@@ -1,0 +1,28 @@
+<div class="nav">
+    {{#if user_id}}
+        <a href="/supporters">See all {{numSupporters}} supporters</a>
+        <a href="/editprofile">Edit your profile</a>
+
+        {{#if signed}}
+            <form action="/unsign" method="POST">
+                <button type="submit" name="unsign" id="unsignBtn">Unsign the
+                    petition</button>
+                <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+            </form>
+        {{else}}
+            <a href="/">Sign the petition</a>
+        {{/if}}
+
+        <a href="/delete">Delete your Account</a>
+        <form action="/logout" method="POST">
+            <input type="submit" value="Logout" />
+            <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+        </form>
+    {{else}}
+        {{#if login}}
+            <a href="/register">Register</a>
+        {{else}}
+            <a href="/login">Login</a>
+        {{/if}}
+    {{/if}}
+</div>

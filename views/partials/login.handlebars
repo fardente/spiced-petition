@@ -1,7 +1,12 @@
-<form action="/login" method="post">
-    <input type="email" name="email" id="" />
-    <input type="password" name="password" id="" />
+<form action="/login" method="post" class="login">
+    <div>
+        <label for="email">Email: </label>
+        <input type="email" name="email" id="" />
+    </div>
+    <div>
+        <label for="password">Password: </label>
+        <input type="password" name="password" id="" />
+    </div>
     <input type="submit" value="Login" />
     <input type="hidden" name="_csrf" value="{{csrfToken}}" />
 </form>
-<a href="/register">Register</a>

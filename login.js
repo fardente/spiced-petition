@@ -10,21 +10,9 @@ function login(email, password) {
                 console.log("Login, User 404");
                 return;
             }
-            console.log("Login, User exists", user[0]);
-
             user = user[0];
-
             const { id, firstname, lastname, passwordhash } = user;
-            console.log(
-                "Login userdata",
-                id,
-                firstname,
-                lastname,
-                passwordhash
-            );
-
             return bcrypt.compare(password, passwordhash).then((res) => {
-                console.log("compare: ", res);
                 return id;
             });
         })

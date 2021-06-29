@@ -4,10 +4,7 @@ const cookieSession = require("cookie-session");
 const csurf = require("csurf");
 const path = require("path");
 const db = require("./db");
-const login = require("./login");
-const register = require("./register");
-const profile = require("./profile");
-const addProfile = require("./profile");
+
 const mw = require("./middleware");
 
 const app = express();
@@ -35,6 +32,8 @@ app.use(function (request, response, next) {
     response.set("x-frame-options", "deny");
     response.locals.csrfToken = request.csrfToken();
     response.locals.user_id = request.session.user_id;
+    response.locals.signed = request.session.signed;
+    response.locals.numSupporters = request.session.numSupporters;
     next();
 });
 
@@ -43,10 +42,16 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/", mw.requireLoggedIn, function (request, response) {
     db.hasSigned(request.session.user_id).then((result) => {
         if (result) {
+            request.session.signed = result;
             response.redirect("/thanks");
         } else {
             response.render("petition", {
-                petitionTitle: "Welcome to Petition 1",
+                petitionTitle: "Welcome! We are THRILLED to have you",
+                secretTitle: "r SOUL!",
+                message:
+                    "Sign our petition to employ necromancy for the resurrection of Michael Jackson so he can save Pop Music!",
+                footnote:
+                    "*By signing you agree to surrender your soul to us as an offering in demonic summoning rituals",
             });
         }
     });

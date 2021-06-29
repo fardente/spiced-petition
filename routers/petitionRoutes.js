@@ -12,8 +12,9 @@ router.get("/thanks", mw.requireLoggedIn, function (request, response) {
             const signature = result[0];
             const numSupporters = result[1];
             if (signature) {
+                request.session.numSupporters = numSupporters;
                 response.render("thanks", {
-                    petitionTitle: "Thanks for signing 1",
+                    petitionTitle: "Thank you for your selfless support!",
                     numSupporters,
                     signature,
                 });
@@ -42,11 +43,25 @@ router.post("/thanks", mw.requireLoggedIn, function (request, response) {
         });
 });
 
+router.post("/unsign", mw.requireLoggedIn, function (request, response) {
+    const id = request.session.user_id;
+    db.deleteSignature(id)
+        .then((result) => {
+            console.log("deleted signature");
+            request.session.signed = "";
+            request.session.numSupporters -= 1;
+            response.redirect("/thanks");
+        })
+        .catch((error) => {
+            console.log("could not delete signature", error);
+        });
+});
+
 router.get("/supporters", mw.requireLoggedIn, function (request, response) {
     db.getSupporters()
         .then((supporters) => {
             response.render("supporters", {
-                petitionTitle: "Thanks for signing 1",
+                petitionTitle: "All your Souls are belong to us",
                 supporters: supporters.rows,
             });
         })
@@ -62,9 +77,9 @@ router.get(
         const { city } = request.params;
         db.getSupportersByCity(city).then((supporters) => {
             response.render("supporters", {
-                petitionTitle: "Supporters from " + city,
+                petitionTitle: "Souls from " + city,
                 supporters,
-                filter: "1",
+                filter: 1,
             });
         });
     }

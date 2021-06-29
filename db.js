@@ -1,10 +1,21 @@
 const spicedPg = require("spiced-pg");
+const createDOMPurify = require("dompurify");
+const { JSDOM } = require("jsdom");
+const window = new JSDOM("").window;
+const DOMPurify = createDOMPurify(window);
 const { genSalt, hash } = require("bcryptjs");
-const { dbUser, dbPass } = require("./secrets.json");
-var db = spicedPg(
-    process.env.DATABASE_URL ||
-        `postgres:${dbUser}:${dbPass}@localhost:5432/petition`
-);
+
+let sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+    const { dbUser, dbPass } = require("./secrets.json");
+    var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
+} else {
+    var db = spicedPg(process.env.DATABASE_URL);
+}
+
+function clean(input) {
+    return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
+}
 
 function getUsers() {
     return db
@@ -46,6 +57,8 @@ function getUserByEmail(email) {
 }
 
 function addUser(firstname, lastname, email, passwordhash) {
+    firstname = clean(firstname);
+    lastname = clean(lastname);
     return db
         .query(
             "INSERT INTO users (firstname, lastname, email, passwordhash) VALUES ($1, $2,$3, $4) RETURNING *",
@@ -61,6 +74,12 @@ function addProfile(user_id, age, city, homepage) {
     if (!age && !city && !homepage) {
         console.log("No profile added");
         return Promise.resolve({});
+    }
+    city = clean(city);
+    homepage = clean(homepage);
+    if (!homepage.startsWith("http://") && !homepage.startsWith("https://")) {
+        console.log("Homepage: ", homepage);
+        homepage = "";
     }
     return db
         .query(
@@ -149,6 +168,8 @@ function hashPass(password) {
 }
 
 function updateUser(user_id, firstname, lastname, email, password) {
+    firstname = clean(firstname);
+    lastname = clean(lastname);
     if (password) {
         hashPass(password).then((passwordhash) => {
             return db.query(
@@ -165,6 +186,12 @@ function updateUser(user_id, firstname, lastname, email, password) {
 }
 
 function upsertProfile(user_id, age, city, homepage) {
+    city = clean(city);
+    homepage = clean(homepage);
+    if (!homepage.startsWith("http://") && !homepage.startsWith("https://")) {
+        console.log("Homepage: ", homepage);
+        homepage = "";
+    }
     return db.query(
         `INSERT INTO user_profiles (user_id, age, city, homepage)
         VALUES ($1, $2, $3, $4)

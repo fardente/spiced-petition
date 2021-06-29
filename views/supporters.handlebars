@@ -1,14 +1,24 @@
 <ul>
     {{#each supporters}}
-        <li><p>
-                {{#if homepage}}
-                    <a href="{{homepage}}">{{firstname}} {{lastname}}</a>
-                {{else}}
+        <li>
+            {{#if homepage}}
+                <p><a href="{{homepage}}">{{firstname}} {{lastname}}</a></p>
+            {{else}}
+                <p>
                     {{firstname}}
                     {{lastname}}
+                </p>
+            {{/if}}
+            {{#if age}}
+                <p>{{age}}</p>
+            {{/if}}
+            {{#if city}}
+                {{#if ../filter}}
+                    {{city}}
+                {{else}}
+                    <p><a href="/supporters/{{city}}">{{city}}</a></p>
                 {{/if}}
-                {{#if age}}{{age}}{{/if}}
-                <a href="/supporters/{{city}}">{{city}}</a>
-            </p></li>
+            {{/if}}
+        </li>
     {{/each}}
 </ul>
