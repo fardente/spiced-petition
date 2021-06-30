@@ -77,6 +77,7 @@ router.get(
         const { city } = request.params;
         db.getSupportersByCity(city).then((supporters) => {
             response.render("supporters", {
+                // TODO: SANITIZE CITY
                 petitionTitle: "Souls from " + city,
                 supporters,
                 filter: 1,

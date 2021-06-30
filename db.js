@@ -142,7 +142,7 @@ function getNumSupporters() {
 function getSupportersByCity(city) {
     return db
         .query(
-            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != '' AND city = $1",
+            "SELECT * FROM users JOIN signatures ON users.id = signatures.user_id JOIN user_profiles ON users.id = user_profiles.user_id WHERE signature != '' AND city ILIKE $1",
             [city]
         )
         .then((result) => {
