@@ -198,7 +198,7 @@ function upsertProfile(user_id, age, city, homepage) {
         ON CONFLICT (user_id)
         DO UPDATE SET age = $2, city = $3, homepage = $4
         RETURNING *`,
-        [user_id, age, city, homepage]
+        [user_id, +age, city, homepage]
     );
 }
 
