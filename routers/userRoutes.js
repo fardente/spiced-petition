@@ -17,17 +17,22 @@ router.get("/login", mw.requireLoggedOut, function (request, response) {
 
 router.post("/login", mw.requireLoggedOut, function (request, response) {
     const { email, password } = request.body;
-    login(email, password).then((user_id) => {
-        if (user_id) {
-            request.session.user_id = user_id;
-            db.getNumSupporters().then((numSupporters) => {
-                request.session.numSupporters = numSupporters;
-                response.redirect("/");
-            });
-            return;
-        }
-        response.redirect("/login");
-    });
+    login(email, password)
+        .then((user_id) => {
+            if (user_id) {
+                request.session.user_id = user_id;
+                db.getNumSupporters().then((numSupporters) => {
+                    request.session.numSupporters = numSupporters;
+                    response.redirect("/");
+                });
+                return;
+            }
+            response.redirect("/login");
+        })
+        .catch((error) => {
+            console.log("signerror", error);
+            response.redirect("/login");
+        });
 });
 
 router.post("/logout", mw.requireLoggedIn, function (request, response) {

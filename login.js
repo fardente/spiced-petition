@@ -13,11 +13,14 @@ function login(email, password) {
             user = user[0];
             const { id, firstname, lastname, passwordhash } = user;
             return bcrypt.compare(password, passwordhash).then((res) => {
-                return id;
+                if (res) {
+                    return id;
+                }
+                throw new Error("Wrong Password");
             });
         })
         .catch((error) => {
-            console.log(console.log(error));
+            console.log("loginfunc", error);
         });
 }
 
