@@ -62,7 +62,9 @@ router.post("/register", mw.requireLoggedOut, function (request, response) {
 });
 
 router.get("/profile", mw.requireLoggedIn, function (request, response) {
-    response.render("profile");
+    response.render("profile", {
+        petitionTitle: "Provide us with more details if you dare",
+    });
 });
 
 router.post("/profile", mw.requireLoggedIn, function (request, response) {
